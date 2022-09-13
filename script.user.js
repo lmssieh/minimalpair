@@ -177,13 +177,57 @@
 `;
 	document.querySelector("#wrap").insertAdjacentElement("afterBegin", root);
 
-	const words = [
-		["stake", "stock", "stick", "stuck", "stack"],
-		["here", "hair", "hire", "heare"],
-		["sheet","shit"],
-		["bad","bed","bud"],
-		["bat","bet","but"]
-	];
+	const words = 
+`stake stock stick stuck stack
+here hair hire
+sheet shit
+bad bed bud
+bat bet but
+rag rug
+under ender
+elf alf
+tusk task
+tuck tack
+ten tan
+sunk sank
+summon salmon
+stuff staff
+struck strack
+rump ramp
+rum ram
+ruf ref
+rudder redder
+putt pet pat
+pun pen pan
+puddle pedal paddle
+must mest mast
+musk mask
+mug meg mag
+mental mantle
+lux lax
+lug leg lag
+hug hag
+guess gas
+funny fanny
+fuck feck
+dub deb dab
+butter better batter
+bun ben ban
+green grin
+bid bead
+slip sleep
+skied skid
+river reaver
+fit feet
+crip creep
+cist ceased
+chit cheated
+chick cheek
+skill skeel
+skim scheme
+sit seat
+scenic cynic
+bit beat`.split('\n').map(e=>e.split(' '));
 
 	function loadIframe(src) {
 		var iframe = document.createElement("iframe");
@@ -231,13 +275,14 @@
 			this.iframeCleanup = cleanUp;
 
 			isLoaded.then((a) => {
-				sounds = a.contentDocument.querySelectorAll(
+				let sounds = a.contentDocument.querySelectorAll(
 					" article.pronunciations .play"
 				);
 				sounds = Array.from(sounds).filter(e=>e.parentNode.classList.contains('en_usa')||e.parentNode.classList.contains('en_uk'));
 				if(!sounds.length>0) { alert('whoops, found no sound for ' + this.randomWord); }
 				let that=this;
 				this.playWordSound = function(...args) {
+					if(!sounds.length) return;
 					let selected=that.getRandomItemFromArrray([...sounds]);
 					selected.onclick.apply(this,args);
 				};
