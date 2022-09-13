@@ -180,6 +180,9 @@
 	const words = [
 		["stake", "stock", "stick", "stuck", "stack"],
 		["here", "hair", "hire", "heare"],
+		["sheet","shit"],
+		["bad","bed","bud"],
+		["bat","bet","but"]
 	];
 
 	function loadIframe(src) {
