@@ -231,7 +231,13 @@
 				sounds = a.contentDocument.querySelectorAll(
 					" article.pronunciations .play"
 				);
-				this.playWordSound = [...sounds][1].onclick;
+				sounds = Array.from(sounds).filter(e=>e.parentNode.classList.contains('en_usa')||e.parentNode.classList.contains('en_uk'));
+				if(!sounds.length>0) { alert('whoops, found no sound for ' + this.randomWord); }
+				let that=this;
+				this.playWordSound = function(...args) {
+					let selected=that.getRandomItemFromArrray([...sounds]);
+					selected.onclick.apply(this,args);
+				};
 				console.log(this.playWordSound);
 				return;
 			});
