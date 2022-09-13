@@ -6,10 +6,12 @@ let dict = {};
 function isLetter(str) {
 	return str.length === 1 && str.match(/[A-Za-z]/i);
 }
-let confusingArr_BADBEDBUD = ['AE0','AE1','AE2', 'AH0','AH1','AH2','EH0','EH1','EH2'];
-let confusingArr_LR = ['L','R']
-let confusingArr = confusingArr_BADBEDBUD;
-let NEED_DIFF=3;
+let confusingArr_BADBEDBUD = `AE0 AE1 AE2 AH0 AH1 AH2 EH0 EH1 EH2`;
+let confusingArr_GREENGRIN = `IH0 IH1 IH2 IY0 IY1 IY2`;
+let confusingArr_LR = `L R`;
+let confusingArr = confusingArr_GREENGRIN.split(' ');
+let NEED_DIFF=2;
+
 
 var revdict={};
 
