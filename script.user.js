@@ -2,6 +2,7 @@
 // @name        minimalpair
 // @namespace   Violentmonkey Scripts
 // @match       *://forvo.com/*
+// @require     https://unpkg.com/petite-vue@0.2.2/dist/petite-vue.iife.js
 // @grant       none
 // @version     1.0
 // @author      -
@@ -19,27 +20,24 @@
 		font-size: 120%;
 		padding: 0.5em 0;
 		cursor: pointer;
-		text-style: underline;
+		text-decoration : underline;
 		font-family: monospace ;
 	}
 	.minimalpair-iframe {
 		display: none;
 	}
 	#minimalpair {
-		display: none;
 		font-family: monospace;
-	}
-  .show-minimalpair #minimalpair {
-    margin: 1rem auto;
 		position: absolute;
-    margin: 1rem auto;
     background: #000;
     z-index: 99999;
     color: white;
     width: 100%;
     min-height: 100vh;
-		display: block;
+		display: flex;
+		flex-direction: column;
 }
+
 #minimalpair button {
 	color: white;
 	border: solid 2px white;
@@ -48,8 +46,41 @@
 	padding: 0.5em 1em;
 	border-radius: 3px;
 	font-weight: bold;
+	line-height: 1em;
+
 }
-  .minimalpair__header div {
+#minimalpair div {
+	max-width: 600px;
+	margin: 0 auto;
+}
+
+.minimalpair__topbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: .5em 0;
+}
+
+.minimalpair__topbar h1 {
+	font-size: 120%;
+	background: linear-gradient(to bottom right,#40e0d0,#f1be44,#ff0080);
+	padding: 0.5em 1em;
+	font-weight: bold;
+	color: black;
+}
+
+.minimalpair__topbar button {
+	padding: 0.2em .4em;
+
+}
+
+#closeMinimalPairApp {
+	margin-left: auto;
+}
+  .minimalpair__header {
+		padding: 2em 0;
+	}
+	.minimalpair__header div {
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -57,15 +88,23 @@
     gap: 1rem;
 }
 
-    ul.minimalpair__words {
+.minimalpair__header h2 {
+	padding: 1em 0;
+}
+
+.minimalpair__words {
+	padding: 2em 0;
+}
+    .minimalpair__words ul {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      /* padding: 1rem; */
+			gap: 1em;
+      padding: 0;
       list-style: none;
     }
 
-    ul.minimalpair__words li {
+    .minimalpair__words ul li {
       padding: 2rem;
       border: 2px solid white;
 			background: white;
@@ -75,120 +114,73 @@
       transition: all .3s ease;
   }
 
-	ul.minimalpair__words li.active,
-  ul.minimalpair__words li:hover {
+	.minimalpair__words ul li.active,
+  .minimalpair__words ul li:hover {
     box-shadow: aliceblue 4px 4px;
     background: black;
     color: white;
 }
 
+#result {
+	padding: 1em 0;
+}
+
 .hidden {
 	display: none;
 }
-
   `;
-
 	const style = document.createElement("style");
 	style.innerHTML = css;
 	document.head.append(style);
 
-	// utils
-	function getRandomItemFromArrray(arr) {
-		const randomNumber = Math.floor(Math.random() * arr.length);
-		console.log(randomNumber);
-		return arr[randomNumber];
-	}
+	window.PetiteVue = PetiteVue;
 
-	console.log("called");
+	// utils
+
+	const { createApp } = PetiteVue;
+
+	const root = document.createElement("div");
+	root.innerHTML = `<div v-if="!showApp" @click="showApp = true" class="top-banner">
+	🤩 Try minimalpair app ⟶
+</div>
+<div id="minimalpair" v-else @mounted="getIframe">
+	<div>
+	<div class="minimalpair__child minimalpair__topbar">
+	<h1>minimalpair</h1>
+	<button @click="showApp = false">x</button>
+</div>
+<div class=" minimalpair__child minimalpair__header">
+	<h2>can you guess the word??</h2>
+	<button @click="playWordSound">play sound 🔊</button>
+	</div>
+<div class="minimalpair__words minimalpair__child">
+	<ul >
+		<li
+			v-for="word in randomWords"
+			:key="word"
+			:class="{'active' : word === selectedAnswer}"
+			@click="selectWord(word)"
+		>
+			{{word}}
+		</li>
+	</ul>
+</div>
+<div class="minimalpair__child">
+	<button id="checkAnswer" @click="showResult = true;">Check Answer</button>
+	<div v-if="showResult">
+		<div id="result">{{ result() }}</div>
+		<button v-if="selectedAnswer" @click="playAgain">Get another word</button>
+	</div>
+</div>
+</div>
+</div>
+`;
+	document.querySelector("#wrap").insertAdjacentElement("afterBegin", root);
+
 	const words = [
 		["stake", "stock", "stick", "stuck", "stack"],
 		["here", "hair", "hire", "heare"],
 	];
-
-	const randomWords = words[1];
-	const randomWord = getRandomItemFromArrray(randomWords);
-
-	let selectedAnswer = null;
-
-	function generateUI() {
-		const topBannerHtml = `
-		<div class="top-banner">
-			Try minimalpair app ==
-		</div>`;
-
-		document
-			.querySelector("#wrap")
-			.insertAdjacentHTML("afterBegin", topBannerHtml);
-
-		document.querySelector(".top-banner").addEventListener("click", () => {
-			document.body.classList.add("show-minimalpair");
-		});
-
-		const generateVoiceHTML = () => {
-			let str = `
-    <div>
-			<button id="closeMinimalPairApp">Close App</button>
-      can you guess the word??
-      <button id="playRandomWord">play</button>
-      spoiler: ${randomWord}
-    </div>
-    `;
-			return str;
-		};
-
-		const generateWordsHtml = (words) => {
-			let str = ``;
-			words.forEach((word) => (str += `<li>${word}</li>`));
-			return str;
-		};
-
-		const appHTML = `
-    <div id="minimalpair">
-    <div class="minimalpair__header">
-    ${generateVoiceHTML()}
-    </div>
-    <ul class="minimalpair__words">
-    ${generateWordsHtml(randomWords)}
-    </ul>
-		<button id="checkAnswer">Check Answer</button>
-		<div id="result" class="hidden">Result</div>
-    </div>
-  `;
-		document.querySelector("#wrap").insertAdjacentHTML("afterBegin", appHTML);
-
-		document
-			.querySelector("#closeMinimalPairApp")
-			.addEventListener("click", () => {
-				document.body.classList.remove("show-minimalpair");
-			});
-
-		document
-			.querySelector(".minimalpair__words")
-			.addEventListener("click", ({ target }) => {
-				if (target.tagName === "LI") {
-					document
-						.querySelector(".minimalpair__words .active")
-						?.classList.remove("active");
-					target.classList.add("active");
-					selectedAnswer = target.textContent;
-					console.log(selectedAnswer);
-				}
-			});
-
-		const resultEle = document.querySelector("#result");
-		document.querySelector("#checkAnswer").addEventListener("click", () => {
-			resultEle.classList.remove("hidden");
-			if (selectedAnswer === randomWord) {
-				resultEle.textContent = "Correct! 🎉";
-				resultEle.className("correct");
-			} else {
-				resultEle.textContent = "Wrong 🎉";
-				resultEle.className("wrong");
-			}
-		});
-	}
-
-	generateUI();
 
 	function loadIframe(src) {
 		var iframe = document.createElement("iframe");
@@ -213,23 +205,64 @@
 		};
 	}
 
-	const { iframe, isLoaded, cleanUp } = loadIframe(
-		`https://forvo.com/word/${randomWord}/#en`
-	);
+	// petite-vue init
+	createApp({
+		input: "",
+		showApp: false,
+		randomWords: null,
+		randomWord: null,
+		showResult: false,
+		selectedAnswer: null,
+		iframe: null,
+		iframeCleanup: null,
+		playWordSound: null,
 
-	let callRandomWordSound = null;
+		getIframe() {
+			if (this.iframe) this.iframeCleanup();
+			this.randomWords = this.getRandomItemFromArrray(words);
+			this.randomWord = this.getRandomItemFromArrray(this.randomWords);
+			const { iframe, isLoaded, cleanUp } = loadIframe(
+				`https://forvo.com/word/${this.randomWord}/#en`
+			);
+			this.iframe = iframe;
+			this.iframeCleanup = cleanUp;
 
-	isLoaded.then((a) => {
-		console.log("finally loaded call backup");
-		console.log(iframe);
-		sounds = a.contentDocument.querySelectorAll(
-			" article.pronunciations .play"
-		);
-		callRandomWordSound = [...sounds][1].onclick;
-		document.querySelector("#playRandomWord").addEventListener("click", () => {
-			console.log("btn clicked");
-			callRandomWordSound();
-		});
-		return;
-	});
+			isLoaded.then((a) => {
+				sounds = a.contentDocument.querySelectorAll(
+					" article.pronunciations .play"
+				);
+				this.playWordSound = [...sounds][1].onclick;
+				console.log(this.playWordSound);
+				return;
+			});
+		},
+
+		getRandomItemFromArrray(arr) {
+			const randomNumber = Math.floor(Math.random() * arr.length);
+			return arr[randomNumber];
+		},
+
+		selectWord(word) {
+			this.showResult = false;
+			this.selectedAnswer = word;
+		},
+
+		playAgain() {
+			this.selectedAnswer = false;
+			this.getIframe();
+		},
+
+		log(value) {
+			console.log(value);
+		},
+
+		result() {
+			if (!this.selectedAnswer) return `please select a word`;
+			if (this.randomWord === this.selectedAnswer) {
+				return `Correct! 🎉`;
+			} else {
+				return `Incorrect! 😱, Try selecting another word.`;
+			}
+		},
+	}).mount();
 })();
