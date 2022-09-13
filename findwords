@@ -1,0 +1,44 @@
+let fs = require('fs');
+
+// the file is from https://github.com/Alexir/CMUdict/blob/master/cmudict-0.7b
+let dictAsArray = fs.readFileSync('cmudict-0.7b').toString().split('\n');
+let dict = {};
+function isLetter(str) {
+	return str.length === 1 && str.match(/[A-Za-z]/i);
+}
+let confusingArr_BADBEDBUD = ['AE0','AE1','AE2', 'AH0','AH1','AH2','EH0','EH1','EH2'];
+let confusingArr_LR = ['L','R']
+let confusingArr = confusingArr_BADBEDBUD;
+let NEED_DIFF=3;
+
+var revdict={};
+
+let parenskip='';
+for(let i = dictAsArray.length-1;i>=0;i--) {
+	let ea = dictAsArray[i];
+	if(isLetter(ea.charAt(0))) {
+		let ww = ea.split('  ');
+		dict[ww[0]] = ww[1];
+		//console.log('[',ww[0],']');
+		// Skip words with parentheses, because getting right pronounce is challenging
+		if(ww[0].includes('(')) { parenskip=ww[0].slice(0,ww[0].indexOf('(')); continue; }
+		else { if(parenskip && ww[0].startsWith(parenskip) ) continue; else parenskip=''; }
+
+		let repl=' '+ww[1]+' ';
+		for(var s of confusingArr) repl=repl.replace(' '+ s +' ','*');
+
+		//(revdict[repl]||=[]).push(ww[0]); // wut, old node.js doesnt allow this
+		(revdict[repl]=revdict[repl]||[]).push(ww[0]);
+	}
+}
+
+for(let ea in revdict) {
+	if(revdict[ea].length>=NEED_DIFF) {
+		// check and skip homonyms (and variants of spelling), which are not interesting to us
+		//var rr=[];
+		//for(let uwu of revdict[ea]) rr.push(dict[uwu]);
+		let rr=revdict[ea].map(e=>dict[e]);
+		if(new Set(rr).size>=NEED_DIFF)
+		console.log(ea, '\t',JSON.stringify(revdict[ea]));
+	}
+}
