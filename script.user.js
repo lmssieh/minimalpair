@@ -12,9 +12,42 @@
 	if (window.self !== window.top) return;
 
 	const css = `
-  #minimalpair {
-    max-width: 600px;
+	.top-banner {
+		background: black;
+		color: white;
+		text-align: center;
+		font-size: 120%;
+		padding: 0.5em 0;
+		cursor: pointer;
+		text-style: underline;
+		font-family: monospace ;
+	}
+	.minimalpair-iframe {
+		display: none;
+	}
+	#minimalpair {
+		display: none;
+		font-family: monospace;
+	}
+  .show-minimalpair #minimalpair {
     margin: 1rem auto;
+		position: absolute;
+    margin: 1rem auto;
+    background: #000;
+    z-index: 99999;
+    color: white;
+    width: 100%;
+    min-height: 100vh;
+		display: block;
+}
+#minimalpair button {
+	color: white;
+	border: solid 2px white;
+	background: none;
+	font-family: inherit;
+	padding: 0.5em 1em;
+	border-radius: 3px;
+	font-weight: bold;
 }
   .minimalpair__header div {
     display: flex;
@@ -34,16 +67,23 @@
 
     ul.minimalpair__words li {
       padding: 2rem;
-      border: 2px solid #000;
+      border: 2px solid white;
+			background: white;
+			color: black;
       cursor: pointer;
       border-radius: 5px;
       transition: all .3s ease;
   }
 
+	ul.minimalpair__words li.active,
   ul.minimalpair__words li:hover {
     box-shadow: aliceblue 4px 4px;
     background: black;
     color: white;
+}
+
+.hidden {
+	display: none;
 }
 
   `;
@@ -68,17 +108,34 @@
 	const randomWords = words[1];
 	const randomWord = getRandomItemFromArrray(randomWords);
 
+	let selectedAnswer = null;
+
 	function generateUI() {
+		const topBannerHtml = `
+		<div class="top-banner">
+			Try minimalpair app ==
+		</div>`;
+
+		document
+			.querySelector("#wrap")
+			.insertAdjacentHTML("afterBegin", topBannerHtml);
+
+		document.querySelector(".top-banner").addEventListener("click", () => {
+			document.body.classList.add("show-minimalpair");
+		});
+
 		const generateVoiceHTML = () => {
 			let str = `
     <div>
+			<button id="closeMinimalPairApp">Close App</button>
       can you guess the word??
       <button id="playRandomWord">play</button>
-      ${randomWord}
+      spoiler: ${randomWord}
     </div>
     `;
 			return str;
 		};
+
 		const generateWordsHtml = (words) => {
 			let str = ``;
 			words.forEach((word) => (str += `<li>${word}</li>`));
@@ -93,9 +150,42 @@
     <ul class="minimalpair__words">
     ${generateWordsHtml(randomWords)}
     </ul>
+		<button id="checkAnswer">Check Answer</button>
+		<div id="result" class="hidden">Result</div>
     </div>
   `;
-		document.body.innerHTML += appHTML;
+		document.querySelector("#wrap").insertAdjacentHTML("afterBegin", appHTML);
+
+		document
+			.querySelector("#closeMinimalPairApp")
+			.addEventListener("click", () => {
+				document.body.classList.remove("show-minimalpair");
+			});
+
+		document
+			.querySelector(".minimalpair__words")
+			.addEventListener("click", ({ target }) => {
+				if (target.tagName === "LI") {
+					document
+						.querySelector(".minimalpair__words .active")
+						?.classList.remove("active");
+					target.classList.add("active");
+					selectedAnswer = target.textContent;
+					console.log(selectedAnswer);
+				}
+			});
+
+		const resultEle = document.querySelector("#result");
+		document.querySelector("#checkAnswer").addEventListener("click", () => {
+			resultEle.classList.remove("hidden");
+			if (selectedAnswer === randomWord) {
+				resultEle.textContent = "Correct! 🎉";
+				resultEle.className("correct");
+			} else {
+				resultEle.textContent = "Wrong 🎉";
+				resultEle.className("wrong");
+			}
+		});
 	}
 
 	generateUI();
@@ -105,6 +195,7 @@
 		iframe.src = src;
 		iframe.width = "0";
 		iframe.height = "0";
+		iframe.classList.add("minimalpair-iframe");
 		document.body.prepend(iframe);
 
 		const loadPromise = new Promise((res) => {
