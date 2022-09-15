@@ -3,7 +3,7 @@
 // @namespace   Violentmonkey Scripts
 // @match       *://forvo.com/*
 // @require     https://unpkg.com/petite-vue@0.2.2/dist/petite-vue.iife.js
-// @resource   IMPORTED_CSS https://raw.githubusercontent.com/lmssieh/minimalpair/main/styles/styles.css
+// @resource   IMPORTED_CSS https://raw.githubusercontent.com/lmssieh/minimalpair/main/styles.css
 // @grant      GM_getResourceText
 // @grant      GM_addStyle
 // @version     1.0
