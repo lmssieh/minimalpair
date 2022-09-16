@@ -21,6 +21,7 @@
 	min-height: 100vh;
 	display: flex;
 	flex-direction: column;
+	align-items: center;
 }
 
 #minimalpair button {
@@ -34,7 +35,7 @@
 	line-height: 1em;
 }
 #minimalpair div {
-	max-width: 600px;
+	min-width: 400px;
 	margin: 0 auto;
 }
 
@@ -80,7 +81,7 @@
 }
 .minimalpair__words ul {
 	display: flex;
-	justify-content: space-between;
+	justify-content: space-around;
 	align-items: center;
 	gap: 1em;
 	padding: 0;
@@ -110,4 +111,15 @@
 
 .hidden {
 	display: none;
+}
+
+textarea {
+	color: black;
+	margin: 1em 0;
+	width: 100%;
+	min-height: 150px !important;
+}
+
+.custom-words {
+	padding: 1.3em 0;
 }
